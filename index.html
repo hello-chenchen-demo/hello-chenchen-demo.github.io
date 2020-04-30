@@ -1,1 +1,67 @@
-Hello World
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>index</title>
+  <!-- -Office UI Fabric -->
+  <link rel="stylesheet" href="https://appsforoffice.microsoft.com/fabric/2.1.0/fabric.min.css">
+  <link rel="stylesheet" href="https://appsforoffice.microsoft.com/fabric/2.1.0/fabric.components.min.css">
+  <script src="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.2.0/js/fabric.min.js"></script>
+  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/beta/hosted/office.js"></script>
+</head>
+<body>
+<script>
+const newBody = '<br>' +
+'<a href="https://contoso.com/meeting?id=123456789" target="_blank">Join Contoso meeting</a>' +
+'<br><br>' +
+'Phone Dial-in: +1(123)456-7890' +
+'<br><br>' +
+'Meeting ID: 123 456 789' +
+'<br><br>' +
+'Want to test your video connection?' +
+'<br><br>' +
+'<a href="https://contoso.com/testmeeting" target="_blank">Join test meeting</a>' +
+'<br><br>';
+
+var mailboxItem;
+
+Office.onReady(function () {
+    console.log('start:');
+    mailboxItem = Office.context.mailbox.item;
+});
+
+function updateBody(event, existingBody) {
+  // Append new body to the existing body.
+  mailboxItem.body.setAsync(existingBody + newBody,
+      { asyncContext: event, coercionType: "html" },
+      function (setBodyResult) {
+          if (setBodyResult.status === Office.AsyncResultStatus.Succeeded) {
+              setBodyResult.asyncContext.completed({ allowEvent: true });
+              console.log('completed.');
+          } else {
+              console.error("Failed to set HTML body.");
+              setBodyResult.asyncContext.completed({ allowEvent: false });
+          }
+      }
+  );
+}
+
+function oneclickPrepareMeeting(event) {
+    // Get HTML body from the client.
+    mailboxItem.body.getAsync("html",
+        { asyncContext: event },
+        function (getBodyResult) {
+            if (getBodyResult.status === Office.AsyncResultStatus.Succeeded) {
+                updateBody(getBodyResult.asyncContext, getBodyResult.value);
+            } else {
+                console.error("Failed to get HTML body.");
+                getBodyResult.asyncContext.completed({ allowEvent: false });
+            }
+        }
+    );
+}
+</script>
+</body>
+</html>
